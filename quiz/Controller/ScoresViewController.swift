@@ -25,10 +25,12 @@ class ScoresViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         scoreLabel.text = String(Items.sharedInstance.score)
         
-        if Items.sharedInstance.score >= Items.sharedInstance.wrong {
+        if Items.sharedInstance.score > Items.sharedInstance.wrong {
             self.view.backgroundColor = UIColor.green
-        } else {
+        } else if Items.sharedInstance.score < Items.sharedInstance.wrong{
             self.view.backgroundColor = UIColor.red
+        } else {
+            self.view.backgroundColor = UIColor.white
         }
         
     }

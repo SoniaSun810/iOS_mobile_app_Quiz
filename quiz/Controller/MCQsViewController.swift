@@ -31,6 +31,7 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
     
     var idx = 0
     var userAnswer: String = ""
+    var reset = false
     
     
     @IBAction func submitButton(_ sender: UIButton) {
@@ -73,6 +74,7 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
             submitButton.isHidden = false
         } else {
             idx = 0
+            reset = true
             nextQuestionButton.isHidden = true
         }
     }
@@ -122,14 +124,16 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
         }
         answerLabel.text = ""
         nextQuestionButton.isHidden = false
+        submitButton.isHidden = false
         }
     
     
     override func viewWillAppear(_ animated: Bool) {
-        if idx == 0 {
+        if reset {
             viewDidLoad()
             Items.sharedInstance.score = 0
             Items.sharedInstance.wrong = 0
+            reset = false
         }
     }
         

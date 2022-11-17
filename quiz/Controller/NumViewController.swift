@@ -28,6 +28,7 @@ class ViewController:
         super.viewDidLoad()
         if nextButton.isHidden == true {
             nextButton.isHidden = false
+            submitButton.isHidden = false
         }
         quizProgress.progress = getProgress()
         questionLabel.text = Items.sharedInstance.completionQuestions[0]
@@ -42,10 +43,11 @@ class ViewController:
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if idx == 0 {
+        if reset {
             viewDidLoad()
             Items.sharedInstance.score = 0
             Items.sharedInstance.wrong = 0
+            reset = false
         }
     }
     
@@ -53,6 +55,7 @@ class ViewController:
     
     var userAnswer: String = ""
     var idx = 0
+    var reset = false
     
     @IBAction func submitButton(_ sender: UIButton) {
         if let text = answerText.text, !text.isEmpty {
@@ -110,6 +113,7 @@ class ViewController:
         } else {
             idx = 0
             nextButton.isHidden = true
+            reset = true
         }
         answerLabel.text = ""
     }
