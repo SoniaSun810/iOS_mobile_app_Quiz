@@ -85,6 +85,7 @@
                         <outlet property="nextButton" destination="I2K-Lp-U8T" id="vlW-GZ-zxI"/>
                         <outlet property="questionLabel" destination="qQH-7J-u23" id="JWy-2N-Wh7"/>
                         <outlet property="quizProgress" destination="dhs-u8-POp" id="M8k-i5-dNc"/>
+                        <outlet property="submitButton" destination="BFM-bY-ClG" id="wSB-0f-tl9"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -141,6 +142,7 @@
                     <connections>
                         <outlet property="nextQuestionButton" destination="Dhc-uZ-j1f" id="5Zh-V1-Hf9"/>
                         <outlet property="pickerChoices" destination="w4T-TY-rCU" id="UMe-P5-rmX"/>
+                        <outlet property="submitButton" destination="muH-cR-gp8" id="xvb-K4-Ml3"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pVO-lk-l6L" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

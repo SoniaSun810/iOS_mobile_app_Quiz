@@ -27,6 +27,7 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
     
     @IBOutlet weak var pickerChoices: UIPickerView!
     @IBOutlet weak var nextQuestionButton: UIButton!
+    @IBOutlet weak var submitButton: UIButton!
     
     var idx = 0
     var userAnswer: String = ""
@@ -35,6 +36,7 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
     @IBAction func submitButton(_ sender: UIButton) {
         let row = pickerChoices.selectedRow(inComponent: 0)
         checkAnswer(userAnswer: Items.sharedInstance.MChoices[idx][row])
+        submitButton.isHidden = true
     }
     
     
@@ -68,6 +70,7 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
             pickerChoices.reloadAllComponents()
             questionLabel.text = Items.sharedInstance.MCQuestions[idx]
             answerLabel.text = ""
+            submitButton.isHidden = false
         } else {
             idx = 0
             nextQuestionButton.isHidden = true
@@ -117,11 +120,10 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
             make.centerX.equalTo(self.view)
             make.width.lessThanOrEqualTo(self.view).offset(-50)
         }
-        
         answerLabel.text = ""
         nextQuestionButton.isHidden = false
-            
         }
+    
     
     override func viewWillAppear(_ animated: Bool) {
         if idx == 0 {

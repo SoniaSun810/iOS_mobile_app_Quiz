@@ -14,6 +14,7 @@ class ViewController:
     @IBOutlet weak var quizProgress: UIProgressView!
     @IBOutlet weak var answerText: UITextField!
     @IBOutlet weak var nextButton: UIButton!
+    @IBOutlet weak var submitButton: UIButton!
     
     lazy var answerLabel: UILabel = {
         let label = UILabel()
@@ -61,6 +62,7 @@ class ViewController:
             }
         answerText.text = ""
         checkAnswer(userAnswer: userAnswer)
+        submitButton.isHidden = true
 
     }
     
@@ -104,6 +106,7 @@ class ViewController:
             idx += 1
             questionLabel.text = Items.sharedInstance.completionQuestions[idx]
             quizProgress.progress = getProgress()
+            submitButton.isHidden = false
         } else {
             idx = 0
             nextButton.isHidden = true
