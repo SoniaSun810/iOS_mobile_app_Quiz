@@ -31,7 +31,7 @@ class ViewController:
             submitButton.isHidden = false
         }
         quizProgress.progress = getProgress()
-        questionLabel.text = Items.sharedInstance.completionQuestions[0]
+        questionLabel.text = Items.sharedInstance.items[0].question
         
         self.view.addSubview(answerLabel)
         answerLabel.snp.makeConstraints { (make) in
@@ -43,11 +43,12 @@ class ViewController:
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if reset {
+        if reset || Items.sharedInstance.editMode {
             viewDidLoad()
             Items.sharedInstance.score = 0
             Items.sharedInstance.wrong = 0
             reset = false
+            Items.sharedInstance.editMode = false
         }
     }
     
@@ -79,9 +80,9 @@ class ViewController:
     {
         let res : Bool
         if nextButton.isHidden == true{
-            res = (Items.sharedInstance.textAnswers[Items.sharedInstance.completionQuestions.count - 1] == userAnswer)
+            res = (Items.sharedInstance.items[Items.sharedInstance.items.count - 1].answer == userAnswer)
         } else {
-            res = (Items.sharedInstance.textAnswers[idx] == userAnswer)
+            res = (Items.sharedInstance.items[idx].answer == userAnswer)
         }
         
         if res {
@@ -99,15 +100,15 @@ class ViewController:
     
     
     func getProgress() -> Float {
-        let progress = Float(idx + 1) / Float(Items.sharedInstance.completionQuestions.count)
+        let progress = Float(idx + 1) / Float(Items.sharedInstance.items.count)
         return progress
     }
     
     
     @IBAction func nextButton(_ sender: UIButton) {
-        if idx < Items.sharedInstance.completionQuestions.count - 1 {
+        if idx < Items.sharedInstance.items.count - 1 {
             idx += 1
-            questionLabel.text = Items.sharedInstance.completionQuestions[idx]
+            questionLabel.text = Items.sharedInstance.items[idx].question
             quizProgress.progress = getProgress()
             submitButton.isHidden = false
         } else {

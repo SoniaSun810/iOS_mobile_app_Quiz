@@ -8,11 +8,28 @@
 import Foundation
 
 class Items {
-    static let sharedInstance = Items()
-    
+
+// Score data
     var score: Int = 0
-    
     var wrong: Int = 0
+// Edit mode turn on & turn off
+    var editMode = false
+    
+    
+    var items : [Item] = []
+
+    static let sharedInstance = {
+        let instance = Items()
+        
+        instance.items.append(Item(question:"What is 2 * 2.1 ?", answer:"4.2"))
+        instance.items.append(Item(question:"What is 14 - 7 ?", answer:"7"))
+        instance.items.append(Item(question:"What is the 18 / 6 ?", answer:"3"))
+        instance.items.append(Item(question:"What is 2 * 2.1 ?", answer:"4.2"))
+        instance.items.append(Item(question:"What is 14 - 7 ?", answer:"7"))
+        instance.items.append(Item(question:"What is the 18 / 6 ?", answer:"3"))
+
+        return instance
+    }()
     
     var MCQuestions: [String] = [
         "Which of the following is not a planet?",
@@ -22,9 +39,9 @@ class Items {
     
     
     var MChoices: [Array] = [
-    ["Earth", "Sun", "Mars", "Venus"],
-    ["Watermelon", "Grape", "Banana", "Lettuce"],
-    ["Panda", "Snake", "Cat", "Dog"],
+        ["Earth", "Sun", "Mars", "Venus"],
+        ["Watermelon", "Grape", "Banana", "Lettuce"],
+        ["Panda", "Snake", "Cat", "Dog"],
     ]
     
     
@@ -34,17 +51,9 @@ class Items {
         "Snake"
     ]
     
-    var completionQuestions: [String] = [
-        "What is 2 * 2.1 ?",
-        "What is 14 - 7 ?",
-        "What is the 18 / 6 ?",
-    ]
     
     
-    var textAnswers: [String] = [
-        "4.2",
-        "7",
-        "3",
-    ]
- 
+    
 }
+
+

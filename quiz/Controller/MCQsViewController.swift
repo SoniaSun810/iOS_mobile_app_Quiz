@@ -106,10 +106,8 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
         
         self.view.addSubview(questionLabel)
         questionLabel.snp.makeConstraints { (make) in
-            make.top.equalTo(self.view).offset(100)
-            make.bottom.equalTo(self.view).offset(-500)
-            make.left.equalTo(self.view).offset(30)
-            make.right.equalTo(self.view).offset(-30)
+            make.top.equalTo(self.view).offset(150)
+            make.centerX.equalTo(self.view)
             make.width.lessThanOrEqualTo(self.view).offset(-50)
         }
         
@@ -129,14 +127,13 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
     
     
     override func viewWillAppear(_ animated: Bool) {
-        if reset {
+        if reset || Items.sharedInstance.editMode{
             viewDidLoad()
             Items.sharedInstance.score = 0
             Items.sharedInstance.wrong = 0
             reset = false
+            Items.sharedInstance.editMode = false
         }
-    }
-        
-        
+     }
     }
     
