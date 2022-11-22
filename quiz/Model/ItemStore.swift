@@ -10,21 +10,20 @@ import UIKit
 class Item {
     var question : String
     var answer : String
-    let dateCreated : Date
-    
+    var dateCreated : Date
+    var itemKey : String
+
     
     // Adding a designated initializer
     init(question: String, answer: String) {
         self.question = question
         self.answer = answer
         self.dateCreated = Date()
+        self.itemKey = UUID().uuidString
     }
 }
 
- 
-class ItemStore {
-    var allItems = [Item] ()
-}
+
 
 
 

@@ -18,15 +18,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let _ = (scene as? UIWindowScene) else { return }
         
-        // Create an ItemStore
-//        let itemStore = ItemStore()
+        // Create an ImageStore
+//        let imageStore = ImageStore()
+//        print(window!)  // Let's take the risk to unwrap !
+//        print(window!.rootViewController!)
+//        print(window!.rootViewController!.children[0])
+
+//        let navigateController = window!.rootViewController as! UINavigationController
+//        let tabBarController = navigateController.children[0] as! UITabBarController
+//        let tableController = tabBarController.viewControllers![3] as! ItemsViewController
+//        tableController.imageStore = imageStore
 //
-//        // Access the ItemsViewController and set its item store
-//        let tabBarController = window!.rootViewController as! UITabBarController
-//        let itemsViewController = window!.rootViewController as! ItemsViewController
-//        itemsViewController.itemStore = itemStore
-        
-        
+//        let numController = tabBarController.viewControllers![1] as! ViewController
+//        numController.imageStore = imageStore
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

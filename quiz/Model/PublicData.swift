@@ -14,6 +14,7 @@ class Items {
     var wrong: Int = 0
 // Edit mode turn on & turn off
     var editMode = false
+    var addMode = false
     
     
     var items : [Item] = []
@@ -30,6 +31,8 @@ class Items {
 
         return instance
     }()
+    
+    private init() {}
     
     var MCQuestions: [String] = [
         "Which of the following is not a planet?",
@@ -50,9 +53,6 @@ class Items {
         "Lettuce",
         "Snake"
     ]
-    
-    
-    
     
 }
 

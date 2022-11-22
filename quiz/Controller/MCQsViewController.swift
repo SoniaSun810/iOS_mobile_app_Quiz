@@ -57,7 +57,7 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
             answerLabel.font = UIFont(name: "GillSans-Bold", size: CGFloat(40))
         } else {
             Items.sharedInstance.wrong += 1
-            answerLabel.text = "ICORRECT!"
+            answerLabel.text = "INCORRECT!"
             answerLabel.textColor = UIColor.red
             answerLabel.font = UIFont(name: "GillSans-Bold", size: CGFloat(40))
         }
@@ -116,7 +116,7 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
         
         self.view.addSubview(answerLabel)
         answerLabel.snp.makeConstraints { (make) in
-            make.bottom.equalTo(self.view).offset(-300)
+            make.top.equalTo(self.view).offset(65)
             make.centerX.equalTo(self.view)
             make.width.lessThanOrEqualTo(self.view).offset(-50)
         }
@@ -127,6 +127,12 @@ class MCQsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDa
     
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        self.parent?.navigationItem.leftBarButtonItem = nil
+        self.parent?.navigationItem.rightBarButtonItem = nil
+        self.parent?.navigationItem.title = nil
+        
         if reset || Items.sharedInstance.editMode{
             viewDidLoad()
             Items.sharedInstance.score = 0

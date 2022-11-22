@@ -15,15 +15,15 @@ class TableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont(name: "HelveticaNeue-Medium", size: 22)
         label.text = "Exploring SnapKit"
-        label.textColor = .red
+        label.textColor = .black
         return label
     }()
     
     lazy var answerLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont(name: "HelveticaNeue-Medium", size: 22)
+        label.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
         label.text = "Exploring SnapKit"
-        label.textColor = .green
+        label.textColor = .gray
         return label
     }()
     
@@ -33,13 +33,13 @@ class TableViewCell: UITableViewCell {
         self.contentView.addSubview(answerLabel)
         
         questionLabel.snp.makeConstraints { (make) in
-            make.top.equalTo(self.contentView).offset(1)
+            make.top.equalTo(self.contentView).offset(7)
             make.left.equalTo(self.contentView).offset(25)
             make.width.lessThanOrEqualTo(self.contentView).offset(-50)
         }
         
         answerLabel.snp.makeConstraints { (make) in
-            make.bottom.equalTo(self.contentView).offset(-1)
+            make.bottom.equalTo(self.contentView).offset(-7)
             make.left.equalTo(self.contentView).offset(25)
             make.width.lessThanOrEqualTo(self.contentView).offset(-50)
         }
@@ -58,6 +58,5 @@ class TableViewCell: UITableViewCell {
     public func setAnswer(answer: String) {
         answerLabel.text = answer
     }
-    
     
 }

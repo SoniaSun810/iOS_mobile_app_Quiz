@@ -12,37 +12,54 @@ import UIKit
 class ItemsViewController: UITableViewController {
     
     @IBOutlet var numericalTableView: UITableView!
-//    var itemStore : ItemStore!
 
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        print(ImageStore.shareImageStore)
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(TableViewCell.self, forCellReuseIdentifier: "TableViewCell")
-        
     }
     
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Add NavigationItem on NavBar
+        self.tableView.reloadData() 
+        self.parent?.navigationItem.title = "Set Numerical Questions"
+        self.parent?.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.add, target: self, action: #selector(self.addAction))
 
-    // Editing Mode
-    @IBAction func toggleEditing(_ sender: UIButton) {
+        self.parent?.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Edit", style: UIBarButtonItem.Style.plain, target: self, action: #selector(self.editAction))
+    }
+    
+    
+    @objc func addAction() {
+        let editItemController = EditItemController(isEditMode: true, itemDetail: nil)
+        self.navigationController?.pushViewController(editItemController, animated: true)
+//        self.present(editItemController, animated: true)
+    }
+    
+    
+    // Editing Mode: Reordering and deleting
+    @objc func editAction() {
         if isEditing {
-            sender.setTitle("Edit", for: .normal)
+            self.parent?.navigationItem.leftBarButtonItem?.title = "Edit"
             setEditing(false, animated: true)
         } else {
-            sender.setTitle("Done", for: .normal)
+            self.parent?.navigationItem.leftBarButtonItem?.title = "Done"
             setEditing(true, animated: true)
             Items.sharedInstance.editMode = true
         }
     }
+
     
     // Implement table view row deletion
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
+            ImageStore.shareImageStore.deleteImage(forKey: Items.sharedInstance.items[indexPath.row].itemKey)
             Items.sharedInstance.items.remove(at: indexPath.row)
             //Also remove the row from the table view with an animation
             tableView.deleteRows(at: [indexPath], with: .automatic)
-            
         }
     }
     
@@ -60,7 +77,6 @@ class ItemsViewController: UITableViewController {
         // remove item from array
         Items.sharedInstance.items.remove(at: fromIndex)
         Items.sharedInstance.items.insert(movedItem, at: toIndex)
-        
     }
     
     
@@ -78,27 +94,22 @@ class ItemsViewController: UITableViewController {
         // Configure the cell’s contents.
         cell.setQuestion(question: Items.sharedInstance.items[indexPath.row].question)
         cell.setAnswer(answer: Items.sharedInstance.items[indexPath.row].answer)
-        
-        // pick image
-        //        UIImagePickerController(rootViewController: <#T##UIViewController#>)
-        
         return cell
     }
     
     
-    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
+        return 70
     }
+
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("you tapped me")
-        let contoller = DetailController()
-        self.present(contoller, animated: true)
+        // print("you tapped me")
+        let item = Items.sharedInstance.items[indexPath.row]
+        let detailContoller = EditItemController(isEditMode: false, itemDetail: item)
+        self.navigationController?.pushViewController(detailContoller, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
-        
     }
-    
     
 }
 

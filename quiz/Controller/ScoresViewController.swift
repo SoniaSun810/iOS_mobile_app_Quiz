@@ -18,11 +18,18 @@ class ScoresViewController: UIViewController {
         super.viewDidLoad()
         scoreLabel.text = String(Items.sharedInstance.score)
         scoreLabel.font = UIFont(name: "HelveticaNeue-Medium", size: 50)
-        scoreLabel.textColor = .white
+        scoreLabel.textColor = .gray
     }
     
     
     override func viewWillAppear(_ animated: Bool) {
+        
+        super.viewWillAppear(animated)
+        
+        self.parent?.navigationItem.leftBarButtonItem = nil
+        self.parent?.navigationItem.rightBarButtonItem = nil
+        self.parent?.navigationItem.title = nil
+        
         scoreLabel.text = String(Items.sharedInstance.score)
         
         if Items.sharedInstance.score > Items.sharedInstance.wrong {

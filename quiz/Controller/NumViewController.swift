@@ -15,6 +15,9 @@ class ViewController:
     @IBOutlet weak var answerText: UITextField!
     @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var submitButton: UIButton!
+    @IBOutlet weak var ImageArea: UIImageView!
+    
+    var imageStore : ImageStore!
     
     lazy var answerLabel: UILabel = {
         let label = UILabel()
@@ -33,9 +36,15 @@ class ViewController:
         quizProgress.progress = getProgress()
         questionLabel.text = Items.sharedInstance.items[0].question
         
+        if let image = ImageStore.shareImageStore.image(forKey: Items.sharedInstance.items[0].itemKey) {
+            ImageArea.image = image
+            print(ImageArea.image)
+        } else {
+            ImageArea.image = nil
+        }
         self.view.addSubview(answerLabel)
         answerLabel.snp.makeConstraints { (make) in
-            make.bottom.equalTo(self.view).offset(-300)
+            make.top.equalTo(self.view).offset(65)
             make.centerX.equalTo(self.view)
             make.width.lessThanOrEqualTo(self.view).offset(-50)
         }
@@ -43,12 +52,19 @@ class ViewController:
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if reset || Items.sharedInstance.editMode {
+        super.viewWillAppear(animated)
+        
+        self.parent?.navigationItem.leftBarButtonItem = nil
+        self.parent?.navigationItem.rightBarButtonItem = nil
+        self.parent?.navigationItem.title = nil
+        
+        if reset || Items.sharedInstance.editMode || Items.sharedInstance.addMode {
             viewDidLoad()
             Items.sharedInstance.score = 0
             Items.sharedInstance.wrong = 0
             reset = false
             Items.sharedInstance.editMode = false
+            Items.sharedInstance.addMode = false
         }
     }
     
@@ -92,7 +108,7 @@ class ViewController:
             answerLabel.font = UIFont(name: "GillSans-Bold", size: CGFloat(40))
         } else {
             Items.sharedInstance.wrong += 1
-            answerLabel.text = "ICORRECT!"
+            answerLabel.text = "INCORRECT!"
             answerLabel.textColor = UIColor.red
             answerLabel.font = UIFont(name: "GillSans-Bold", size: CGFloat(40))
         }
@@ -109,6 +125,11 @@ class ViewController:
         if idx < Items.sharedInstance.items.count - 1 {
             idx += 1
             questionLabel.text = Items.sharedInstance.items[idx].question
+            if let image = ImageStore.shareImageStore.image(forKey: Items.sharedInstance.items[idx].itemKey){
+                ImageArea.image = image
+            } else {
+                ImageArea.image = nil
+            }
             quizProgress.progress = getProgress()
             submitButton.isHidden = false
         } else {
@@ -120,3 +141,4 @@ class ViewController:
     }
 }
 
+ 
