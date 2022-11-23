@@ -7,16 +7,22 @@
 
 import Foundation
 import UIKit
+import SnapKit
 
 class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationControllerDelegate, UIImagePickerControllerDelegate{
     
     
     var item : Item!
     var isEdit = false
-    
-    //    lazy var imageView: UIImageView = {
-    //
-    //    }
+    var imageConstraintX : ConstraintMakerEditable!
+    var imageConstraintY : ConstraintMakerEditable!
+    var dateBottom: ConstraintMakerEditable!
+    var questionLabelLeft: ConstraintMakerEditable!
+    var answerLabelLeft: ConstraintMakerEditable!
+    var questionTextLeft: ConstraintMakerEditable!
+    var answerTextLeft: ConstraintMakerEditable!
+   
+   
     
     lazy var questionLabel: UILabel = {
         let label = UILabel()
@@ -62,11 +68,12 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
     }()
     
     
-    lazy var imageArea : UIImageView = {
-        let image = UIImageView()
-        image.image = UIImage(named: "choices")!
-        image.contentMode = .scaleAspectFit
-        return image
+    lazy var imageView : UIImageView = {
+        let view = UIImageView()
+        view.image = UIImage(named: "choices")!
+        view.contentMode = .scaleAspectFill
+        view.clipsToBounds = true
+        return view
     }()
     
     let dateFormatter : DateFormatter = {
@@ -86,60 +93,49 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.systemYellow
-        //        var tab = UITapGestureRecognizer(target: self, action: #selector(self.dismiss))
-        
-        //        if item == nil {
-        //            self.view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.dismiss)))
-        //        }
-        
+   
         self.view.addSubview(questionLabel)
         questionLabel.snp.makeConstraints { (make) in
             make.width.equalTo(100)
             make.top.equalTo(self.view).offset(155)
-            make.left.equalTo(self.view).offset(25)
         }
         
         self.view.addSubview(answerLabel)
         answerLabel.snp.makeConstraints { (make) in
             make.width.equalTo(100)
             make.top.equalTo(self.view).offset(205)
-            make.left.equalTo(self.view).offset(25)
         }
         
         self.view.addSubview(questionText)
         questionText.snp.makeConstraints { (make) in
             make.width.equalTo(250)
             make.top.equalTo(self.view).offset(150)
-            make.left.equalTo(self.view).offset(110)
         }
         
         self.view.addSubview(answerText)
         answerText.snp.makeConstraints { (make) in
             make.width.equalTo(250)
             make.top.equalTo(self.view).offset(200)
-            make.left.equalTo(self.view).offset(110)
         }
         
         self.view.addSubview(dateLabel)
         dateLabel.snp.makeConstraints { (make) in
-            make.bottom.equalTo(self.view).offset(-100)
             make.centerX.equalTo(self.view)
             make.width.lessThanOrEqualTo(self.view).offset(-50)
         }
         
         if item != nil {
             if let image = ImageStore.shareImageStore.image(forKey: item.itemKey) {
-                imageArea.image = image
+                imageView.image = image
             }
         }
         
-        self.view.addSubview(imageArea)
-        imageArea.snp.makeConstraints{ (make) in
-            make.bottom.equalTo(self.view).offset(-250)
-            make.centerX.equalTo(self.view)
-            make.size.equalTo(CGSize(width: 300, height: 300))
+        self.view.addSubview(imageView)
+        imageView.snp.makeConstraints{ (make) in
+            make.size.equalTo(CGSize(width: 250, height: 250))
         }
         
+        self.makeConstraint()
         self.questionText.delegate = self
         self.answerText.delegate = self
     }
@@ -190,8 +186,8 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
         navigationController?.toolbar.barTintColor = UIColor.black
         navigationController?.toolbar.tintColor = UIColor.white
         
-        let cameraButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.camera, target: self, action: #selector(self.choosePhotoSource))
-        let drawButton = UIBarButtonItem(title: "Draw", style: .plain, target: self, action: nil)
+        let cameraButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.camera, target: self, action: #selector(self.choosePhoto))
+        let drawButton = UIBarButtonItem(title: "Draw", style: .plain, target: self, action: #selector(self.drawPhoto))
         let removeButton = UIBarButtonItem(title: "Remove", style: .plain, target: self, action: #selector(self.removePhoto))
         
         //        let flexibleSpace1 = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.flexibleSpace, target: self, action: nil)
@@ -204,7 +200,7 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
         
     }
     
-    @objc func choosePhotoSource() {
+    @objc func choosePhoto() {
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         alertController.modalPresentationStyle = .popover
         
@@ -231,13 +227,20 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
         self.present(alertController, animated: true, completion: nil)
     }
     
+    // Draw a picture
+    @objc func drawPhoto() {
+        let drawController = DrawViewController()
+        self.navigationController?.pushViewController(drawController, animated: true)
+    }
+    
     // Remove a photo
     @objc func removePhoto() {
         if item != nil {
             ImageStore.shareImageStore.deleteImage(forKey: item.itemKey)
-            imageArea.image = UIImage(named: "choices")!
+            imageView.image = UIImage(named: "choices")!
         }
     }
+
     
     // Adding an image picker controller creation method
     func imagePicker(for sourceType: UIImagePickerController.SourceType) -> UIImagePickerController {
@@ -258,21 +261,70 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
             ImageStore.shareImageStore.setImage(image, forKey: newItem.itemKey)
         }
 //        print(ImageStore.shareImageStore.image(forKey: item.itemKey))
-        imageArea.image = image
+        imageView.image = image
         dismiss(animated: true, completion: nil)
     }
     
     // Adaptive Interface
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-            super.viewWillTransition(to: size, with: coordinator)
-            if UIDevice.current.orientation.isLandscape {
-                print("Landscape")
-//                imageView.image = UIImage(named: const2)
-            } else {
-                print("Portrait")
-//                imageView.image = UIImage(named: const)
+        super.viewWillTransition(to: size, with: coordinator)
+        self.makeConstraint()
+        print("view will transition")
+        }
+    
+    func makeConstraint() {
+        self.imageConstraintX?.constraint.deactivate()
+        self.imageConstraintY?.constraint.deactivate()
+        self.dateBottom?.constraint.deactivate()
+        self.questionLabelLeft?.constraint.deactivate()
+        self.answerLabelLeft?.constraint.deactivate()
+        self.questionTextLeft?.constraint.deactivate()
+        self.answerTextLeft?.constraint.deactivate()
+        
+        if UIDevice.current.orientation.isPortrait ||
+            (UIDevice.current.orientation == UIDeviceOrientation.unknown &&
+            self.view.frame.size.width < self.view.frame.size.height) {
+            imageView.snp.makeConstraints{ (make) in
+                self.imageConstraintX = make.centerX.equalTo(self.view)
+                self.imageConstraintY = make.centerY.equalTo(self.view).offset(80)
+            }
+            dateLabel.snp.makeConstraints { make in
+                self.dateBottom = make.bottom.equalTo(self.view).offset(-80)
+            }
+            questionLabel.snp.makeConstraints { make in
+                self.questionLabelLeft = make.left.equalTo(self.view).offset(25)
+            }
+            answerLabel.snp.makeConstraints { make in
+                self.answerLabelLeft = make.left.equalTo(self.view).offset(25)
+            }
+            questionText.snp.makeConstraints { make in
+                self.questionTextLeft = make.left.equalTo(self.view).offset(110)
+            }
+            answerText.snp.makeConstraints { make in
+                self.answerTextLeft = make.left.equalTo(self.view).offset(110)
+            }
+        } else {
+            imageView.snp.makeConstraints{ (make) in
+                self.imageConstraintX = make.centerX.equalTo(self.view).offset(180)
+                self.imageConstraintY = make.centerY.equalTo(self.view).offset(-20)
+            }
+            dateLabel.snp.makeConstraints { make in
+                self.dateBottom = make.bottom.equalTo(self.view).offset(-35)
+            }
+            questionLabel.snp.makeConstraints { make in
+                self.questionLabelLeft = make.left.equalTo(self.view).offset(60)
+            }
+            answerLabel.snp.makeConstraints { make in
+                self.answerLabelLeft = make.left.equalTo(self.view).offset(60)
+            }
+            questionText.snp.makeConstraints { make in
+                self.questionTextLeft = make.left.equalTo(self.view).offset(140)
+            }
+            answerText.snp.makeConstraints { make in
+                self.answerTextLeft = make.left.equalTo(self.view).offset(140)
             }
         }
+    }
     
     
 }
