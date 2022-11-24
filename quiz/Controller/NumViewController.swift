@@ -33,6 +33,9 @@ class ViewController:
             nextButton.isHidden = false
             submitButton.isHidden = false
         }
+        submitButton.isHidden = false
+        nextButton.isHidden = false
+        idx = 0
         quizProgress.progress = getProgress()
         questionLabel.text = Items.sharedInstance.items[0].question
         
