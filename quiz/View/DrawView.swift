@@ -100,6 +100,15 @@ class DrawView : UIView, UIEditMenuInteractionDelegate, UIGestureRecognizerDeleg
         return true
     }
     
+    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer == self.moveRecognizer {
+            let point = gestureRecognizer.location(in: self)
+            self.selectedLineIndex = self.indexOfLine(at: point)
+            return selectedLineIndex != nil
+        }
+        return super.gestureRecognizerShouldBegin(gestureRecognizer)
+    }
+    
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         true
     }
@@ -263,7 +272,7 @@ class DrawView : UIView, UIEditMenuInteractionDelegate, UIGestureRecognizerDeleg
                 let x = begin.x + ((end.x - begin.x) * t)
                 let y = begin.y + ((end.y - begin.y) * t)
                 // If the tapped point is within 20 points, let's return this line
-                if hypot(x - point.x, y - point.y) < 20.0 {
+                if hypot(x - point.x, y - point.y) < 30.0 {
                     return index
                 }
             }
@@ -300,8 +309,12 @@ class DrawView : UIView, UIEditMenuInteractionDelegate, UIGestureRecognizerDeleg
     
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("touch began")
         super.touchesBegan(touches, with: event)
+        print("touch began")
+        print(self.moveRecognizer.state)
+        if self.moveRecognizer.state == .began || self.moveRecognizer.state == .changed {
+            return
+        }
         let touch = touches.first!
         let location = touch.location(in: self)
         currentLine = Line(begin:location, end:location)
@@ -310,6 +323,11 @@ class DrawView : UIView, UIEditMenuInteractionDelegate, UIGestureRecognizerDeleg
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesMoved(touches, with: event)
+        print("touch moved")
+        print(self.moveRecognizer.state)
+        if self.moveRecognizer.state == .began || self.moveRecognizer.state == .changed {
+            return
+        }
         let touch = touches.first!
         let location = touch.location(in: self)
         currentLine?.end = location
@@ -319,6 +337,10 @@ class DrawView : UIView, UIEditMenuInteractionDelegate, UIGestureRecognizerDeleg
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         print("touch ended")
+        print(self.moveRecognizer.state)
+        if self.moveRecognizer.state == .began || self.moveRecognizer.state == .changed {
+            return
+        }
         if var line = currentLine {
             let touch = touches.first!
             let location = touch.location(in: self)

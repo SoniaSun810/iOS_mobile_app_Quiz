@@ -24,10 +24,10 @@ class Items {
         
         instance.items.append(Item(question:"What is 2 * 2.1 ?", answer:"4.2"))
         instance.items.append(Item(question:"What is 14 - 7 ?", answer:"7"))
-        instance.items.append(Item(question:"What is the 18 / 6 ?", answer:"3"))
+        instance.items.append(Item(question:"What is 18 / 6 ?", answer:"3"))
         instance.items.append(Item(question:"What is 2 * 2.1 ?", answer:"4.2"))
         instance.items.append(Item(question:"What is 14 - 7 ?", answer:"7"))
-        instance.items.append(Item(question:"What is the 18 / 6 ?", answer:"3"))
+        instance.items.append(Item(question:"What is 18 / 6 ?", answer:"3"))
 
         return instance
     }()
