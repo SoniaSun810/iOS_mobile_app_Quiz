@@ -172,6 +172,9 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
             questionText.text = item.question
             answerText.text = item.answer
             dateLabel.text = dateFormatter.string(from: item.dateCreated)
+            if let image = ImageStore.shareImageStore.image(forKey: item.itemKey) {
+                imageView.image = image
+            }
         }
     }
     
@@ -189,12 +192,6 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
         let cameraButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.camera, target: self, action: #selector(self.choosePhoto))
         let drawButton = UIBarButtonItem(title: "Draw", style: .plain, target: self, action: #selector(self.drawPhoto))
         let removeButton = UIBarButtonItem(title: "Remove", style: .plain, target: self, action: #selector(self.removePhoto))
-        
-        //        let flexibleSpace1 = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.flexibleSpace, target: self, action: nil)
-        //
-        //        let addButton = UIBarButtonItem(title: "+", style: .plain, target: self, action: nil)
-        //
-       
         let arr: [Any] = [cameraButton, drawButton, removeButton]
         setToolbarItems(arr as? [UIBarButtonItem] ?? [UIBarButtonItem](), animated: true)
         
@@ -217,7 +214,6 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
             _ in
             let imagePicker = self.imagePicker(for: .photoLibrary)
             imagePicker.modalPresentationStyle = .popover
-//            imagePicker.popoverPresentationController?.barButtonItem = sender as? UIBarButtonItem
             self.present(imagePicker, animated: true, completion: nil)
         }
         alertController.addAction(photoLibraryAction)
@@ -229,7 +225,14 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
     
     // Draw a picture
     @objc func drawPhoto() {
-        let drawController = DrawViewController()
+        var drawController : DrawViewController!
+        if item != nil {
+            drawController = DrawViewController(itemDetail: item)
+        } else {
+            let newItem = Items.sharedInstance.items[Items.sharedInstance.items.count - 1]
+            drawController = DrawViewController(itemDetail: newItem)
+            item = newItem
+        }
         self.navigationController?.pushViewController(drawController, animated: true)
     }
     
@@ -325,7 +328,6 @@ class EditItemController : UIViewController, UITextFieldDelegate,  UINavigationC
             }
         }
     }
-    
     
 }
 

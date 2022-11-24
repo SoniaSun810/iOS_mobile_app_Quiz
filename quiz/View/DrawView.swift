@@ -8,32 +8,24 @@
 import Foundation
 import UIKit
 
-class DrawView : UIView, UIEditMenuInteractionDelegate {
+class DrawView : UIView, UIEditMenuInteractionDelegate, UIGestureRecognizerDelegate{
     
     var currentLine : Line?
     var finishedLines = [Line]()
-    var selectedLineIndex : Int? {
-        didSet {
-            if self.selectedLineIndex == nil {
-                let menu = UIMenuController.shared
-                menu.setMenuVisible(false, animated: true)
-            }
-        }
-    }
+    var penColorNow = UIColor.black
+    var imageToSave : UIImage!
+    var selectedLineIndex : Int?
+    var moveRecognizer : UIPanGestureRecognizer!
     
     var editMenuInteraction : UIEditMenuInteraction!
     
-    @IBInspectable var finishedLineColor: UIColor = UIColor.black {
-        didSet {
-            setNeedsDisplay()
-        }
-    }
     
     @IBInspectable var currentLineColor: UIColor = UIColor.red {
         didSet {
             setNeedsDisplay()
         }
     }
+   
     
     @IBInspectable var lineThickness: CGFloat = 10 {
         didSet {
@@ -52,8 +44,9 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
     }
     
     override func draw(_ rect: CGRect) {
-        finishedLineColor.setStroke()
         for line in finishedLines{
+            let strokeColor = line.color
+            strokeColor.setStroke()
             stroke(line)
         }
         currentLineColor.setStroke()
@@ -73,6 +66,10 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
         print("init")
         // Ad the edit menu interaction
         
+        // Grab the menu controller
+        self.editMenuInteraction = UIEditMenuInteraction(delegate: self)
+        self.addInteraction(editMenuInteraction!)
+        
         let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.doubleTap(_:)))
         doubleTapRecognizer.numberOfTapsRequired = 2
         doubleTapRecognizer.delaysTouchesBegan = true
@@ -83,8 +80,14 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
         tapRecognizer.require(toFail: doubleTapRecognizer)
         self.addGestureRecognizer(tapRecognizer)
         
-        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: <#T##Selector?#>)
-        addGestureRecognizer(longPressRecognizer)
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(self.longPress(_:)))
+        self.addGestureRecognizer(longPressRecognizer)
+        
+        self.moveRecognizer = UIPanGestureRecognizer(target: self, action: #selector(self.moveLine(_:)))
+        self.moveRecognizer.delegate = self
+        self.moveRecognizer.cancelsTouchesInView = false
+        self.moveRecognizer.delaysTouchesBegan = true
+        self.addGestureRecognizer(moveRecognizer)
     }
     
     // Detecting taps with UITapGestureRecognizer
@@ -93,8 +96,51 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
         fatalError()
     }
     
+    override var canBecomeFirstResponder: Bool {
+        return true
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        true
+    }
+    
+    @objc func moveLine(_ gestureRecognizer : UIPanGestureRecognizer) {
+        print("recognized a pan")
+        if let index = selectedLineIndex {
+            // When the pan recognizer changes its position
+            if gestureRecognizer.state == .changed {
+                let translation = gestureRecognizer.translation(in: self)
+                finishedLines[index].begin.x += translation.x
+                finishedLines[index].begin.y += translation.y
+                finishedLines[index].end.x += translation.x
+                finishedLines[index].end.y += translation.y
+                gestureRecognizer.setTranslation(CGPoint.zero, in: self)
+                setNeedsDisplay()
+            } else {
+                return
+            }
+        }
+    }
+    
     @objc func doubleTap(_ gestureRecognizer : UIGestureRecognizer) {
         print("recognized a double tap")
+        
+        let alertController = UIAlertController(title: nil, message: "Are you sure to Delete All Lines on canvas?", preferredStyle: .alert)
+        alertController.modalPresentationStyle = .popover
+        
+        let yesAction = UIAlertAction(title: "Yes", style: .default){
+            _ in
+            self.deleteAllLines()
+        }
+        alertController.addAction(yesAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default)
+        alertController.addAction(cancelAction)
+        
+        self.parentViewController?.present(alertController, animated: true)
+    }
+    
+    func deleteAllLines() {
         self.selectedLineIndex = nil
         currentLine = nil
         finishedLines.removeAll()
@@ -105,69 +151,110 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
         print("recognized a tap")
         let point = gestureRecognizer.location(in: self)
         self.selectedLineIndex = self.indexOfLine(at: point)
-//        // Grab the menu controller
-//        self.editMenuInteraction = UIEditMenuInteraction(delegate: self)
-//        self.addInteraction(editMenuInteraction!)
-//        let configuration = UIEditMenuConfiguration(identifier: nil, sourcePoint: point)
-//        if let interaction = editMenuInteraction {
-//               // Present the edit menu interaction.
-//               interaction.presentEditMenu(with: configuration)
-//           }
-        
-        let menu = UIMenuController.shared
         if selectedLineIndex != nil {
             becomeFirstResponder()
-            let deleteItem = UIMenuItem(title: "delete", action: #selector(self.deleteLine(_:)))
-            menu.menuItems = [deleteItem]
-            let targetRect = CGRect(x: point.x, y: point.y, width: 2, height: 2)
-            menu.setTargetRect(targetRect, in: self)
-            menu.setMenuVisible(true, animated: true)
-        } else {
-            // Hide the menu if no line is selected
-            menu.setMenuVisible(false, animated: true)
+            let configuration = UIEditMenuConfiguration(identifier: "editLine", sourcePoint: point)
+            if let interaction = editMenuInteraction {
+                // Present the edit menu interaction.
+                interaction.presentEditMenu(with: configuration)
+            }
         }
-        setNeedsDisplay()
+    }
+    
+    func editMenuInteraction(
+        _ interaction: UIEditMenuInteraction,
+        menuFor configuration: UIEditMenuConfiguration,
+        suggestedActions: [UIMenuElement]
+    ) -> UIMenu? {
+
+        let deleteLine = UIKeyCommand(title: "Delete",
+                                       action: #selector(self.deleteLine),
+                                       input: "n",
+                                       modifierFlags: .command)
+        let changeBlue = UIKeyCommand(title: "Blue",
+                                      action: #selector(self.changeLineColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+        let changePurple = UIKeyCommand(title: "Purple",
+                                      action: #selector(self.changeLineColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+        let changeYellow = UIKeyCommand(title: "Yellow",
+                                      action: #selector(self.changeLineColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+        let changeOrange = UIKeyCommand(title: "Orange",
+                                      action: #selector(self.changeLineColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+        let penBlue = UIKeyCommand(title: "Blue",
+                                      action: #selector(self.changePenColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+        let penPurple = UIKeyCommand(title: "Purple",
+                                      action: #selector(self.changePenColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+        let penYellow = UIKeyCommand(title: "Yellow",
+                                      action: #selector(self.changePenColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+        let penOrange = UIKeyCommand(title: "Orange",
+                                      action: #selector(self.changePenColor(_:)),
+                                        input: "o",
+                                        modifierFlags: .command)
+
+
+        // Use the .displayInline option to avoid displaying the menu as a submenu,
+        // and to separate it from the other menu elements using a line separator.
+        let newMenu1 = UIMenu(title: "", options: .displayInline, children: [deleteLine, changeBlue, changePurple, changeYellow, changeOrange])
+        let newMenu2 = UIMenu(title: "", options: .displayInline, children: [penBlue, penPurple, penYellow, penOrange])
+        
+        if configuration.identifier == AnyHashable("editLine") {
+            return newMenu1
+        } else if configuration.identifier == AnyHashable("changePenColor") {
+            return newMenu2
+        }
+        return nil
     }
     
     
     @objc func longPress(_ gestureRecognizer: UIGestureRecognizer) {
         print("recognized a long press")
-        if gestureRecognizer.state == .began{
-            let point = gestureRecognizer.location(in: self)
-        }
         if gestureRecognizer.state == .ended{
-            penColorMenu(at: point)
+            let point = gestureRecognizer.location(in: self)
+            self.selectedLineIndex = self.indexOfLine(at: point)
+            if selectedLineIndex != nil {
+                deleteLine()
+            } else {
+                becomeFirstResponder()
+                let configuration = UIEditMenuConfiguration(identifier: "changePenColor", sourcePoint: point)
+                if let interaction = editMenuInteraction {
+                    // Present the edit menu interaction.
+                    interaction.presentEditMenu(with: configuration)
+                }
+            }
         }
         setNeedsDisplay()
     }
     
-    
-    func penColorMenu(at point: CGPoint) {
-        let menu = UIMenuController.shared
-        becomeFirstResponder()
-        let deleteItem1 = UIMenuItem(title: "red", action: #selector(self.changePenColor(_:)))
-        let deleteItem2 = UIMenuItem(title: "yellow", action: #selector(self.changePenColor(_:)))
-        let deleteItem3 = UIMenuItem(title: "blue", action: #selector(self.changePenColor(_:)))
-        let deleteItem4 = UIMenuItem(title: "green", action: #selector(self.changePenColor(_:)) )
-        menu.menuItems = [deleteItem1, deleteItem2, deleteItem3, deleteItem4]
-            let targetRect = CGRect(x: point.x, y: point.y, width: 2, height: 2)
-            menu.setTargetRect(targetRect, in: self)
-            menu.setMenuVisible(true, animated: true)
-        setNeedsDisplay()
-    }
-    
-    @objc func changePenColor(_ sender : UIMenuController) {
-        
+    @objc func changePenColor(_ sender : UIKeyCommand) {
+        var changeColorTo = UIColor.black
+        if sender.title == "Blue" {
+            changeColorTo = UIColor.blue
+        } else if sender.title == "Purple" {
+            changeColorTo = UIColor.purple
+        } else if sender.title == "Yellow" {
+            changeColorTo = UIColor.yellow
+        } else {
+            changeColorTo = UIColor.orange
+        }
+        penColorNow = changeColorTo
     }
                                      
     
-    
-    override var canBecomeFirstResponder: Bool {
-        return true
-    }
-    
     func indexOfLine(at point: CGPoint) -> Int? {
-        for (index,line) in finishedLines.enumerated() {
+        for (index, line) in finishedLines.enumerated() {
             let begin = line.begin
             let end = line.end
             
@@ -184,7 +271,7 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
         return nil
     }
     
-    @objc func deleteLine(_ sender : UIMenuController) {
+    @objc func deleteLine() {
         if let index = selectedLineIndex {
             finishedLines.remove(at: index)
             self.selectedLineIndex = nil
@@ -193,19 +280,36 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
         }
     }
     
+    @objc func changeLineColor(_ sender : UIKeyCommand) {
+        var changeColorTo = UIColor.black
+        if sender.title == "Blue" {
+            changeColorTo = UIColor.blue
+        } else if sender.title == "Purple" {
+            changeColorTo = UIColor.purple
+        } else if sender.title == "Yellow" {
+            changeColorTo = UIColor.yellow
+        } else {
+            changeColorTo = UIColor.orange
+        }
+        if let index = selectedLineIndex {
+            finishedLines[index].color = changeColorTo
+            selectedLineIndex = nil
+            setNeedsDisplay()
+        }
+    }
+    
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         print("touch began")
-//        super.touchesBegan(touches, with: event)
+        super.touchesBegan(touches, with: event)
         let touch = touches.first!
         let location = touch.location(in: self)
         currentLine = Line(begin:location, end:location)
         setNeedsDisplay()
-//        print(self.location)
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        super.touchesMoved(touches, with: event)
+        super.touchesMoved(touches, with: event)
         let touch = touches.first!
         let location = touch.location(in: self)
         currentLine?.end = location
@@ -213,12 +317,13 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        super.touchesEnded(touches, with: event)
+        super.touchesEnded(touches, with: event)
         print("touch ended")
         if var line = currentLine {
             let touch = touches.first!
             let location = touch.location(in: self)
             line.end = location
+            line.color = penColorNow
             finishedLines.append(line)
         }
         currentLine = nil
@@ -234,5 +339,32 @@ class DrawView : UIView, UIEditMenuInteractionDelegate {
         super.touchesCancelled(touches, with: event)
     }
     
+    // MARK: - UIView->UIImage
+    func getImage() -> UIImage {
+    UIGraphicsBeginImageContextWithOptions(self.frame.size, false, UIScreen.main.scale)
+    let context = UIGraphicsGetCurrentContext()
+    self.layer.render(in: context!)
+    let image = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    return image!
+    }
     
+    @objc func saveImage() {
+        imageToSave = getImage()
+    }
+    
+}
+
+extension UIView {
+    var parentViewController: UIViewController? {
+        // Starts from next (As we know self is not a UIViewController).
+        var parentResponder: UIResponder? = self.next
+        while parentResponder != nil {
+            if let viewController = parentResponder as? UIViewController {
+                return viewController
+            }
+            parentResponder = parentResponder?.next
+        }
+        return nil
+    }
 }

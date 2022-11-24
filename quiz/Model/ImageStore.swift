@@ -17,7 +17,6 @@ class ImageStore {
     // Implementing ImageStore methods
     func setImage(_ image: UIImage, forKey key: String) {
         cache.setObject(image, forKey: key as NSString)
-        
         let url = imageURL(forKey: key)
         if let data = image.jpegData(compressionQuality: 0.5){
             try? data.write(to: url)

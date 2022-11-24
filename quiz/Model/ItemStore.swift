@@ -12,6 +12,7 @@ class Item {
     var answer : String
     var dateCreated : Date
     var itemKey : String
+    var pictureDraw : [Line]
 
     
     // Adding a designated initializer
@@ -20,6 +21,7 @@ class Item {
         self.answer = answer
         self.dateCreated = Date()
         self.itemKey = UUID().uuidString
+        self.pictureDraw = [Line]()
     }
 }
 
